@@ -1,65 +1,54 @@
-# PlayTrackr
-Personal IT project, football highlights
+# PlayTrackr ⚽📊  
+_Automated football player touch detection from match video_
 
+PlayTrackr is an AI-powered system that automatically analyses full-game football footage and extracts **every moment a selected player touches the ball**.  
+Paste a YouTube link (or upload a video), identify yourself once, and get a curated list of touch timestamps and clips — without manually scrubbing through a 90-minute match.
 
-# Repo Structure
-playtrackr/
-├── README.md
-├── LICENSE
-├── .gitignore
-├── pyproject.toml          # or requirements.txt + setup.cfg
-├── docker-compose.yml      # later: API + maybe DB
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py         # FastAPI entrypoint
-│   │   ├── api/
-│   │   │   ├── __init__.py
-│   │   │   └── v1/
-│   │   │       ├── __init__.py
-│   │   │       ├── routes_jobs.py     # submit/check jobs
-│   │   │       └── routes_health.py   # healthcheck
-│   │   ├── core/
-│   │   │   ├── config.py    # settings: paths, models, etc.
-│   │   │   └── logging.py   # log setup
-│   │   ├── services/
-│   │   │   ├── __init__.py
-│   │   │   ├── video_ingest.py      # download/normalise video
-│   │   │   ├── detection.py         # YOLO wrapper
-│   │   │   ├── tracking.py          # ByteTrack/DeepSORT wrapper
-│   │   │   ├── player_id.py         # selecting "you"
-│   │   │   ├── touch_detection.py   # ball–player interaction logic
-│   │   │   └── jobs.py              # orchestrates full pipeline for one match
-│   │   ├── models/
-│   │   │   ├── __init__.py
-│   │   │   ├── job.py       # Pydantic models for job requests/responses
-│   │   │   └── events.py    # Pydantic models for touch events
-│   │   └── db/
-│   │       ├── __init__.py
-│       │   ├── base.py      # database connection (can be SQLite at start)
-│       │   └── schemas.py   # ORM models (Job, Match, Event) – optional for MVP
-│   └── tests/
-│       ├── __init__.py
-│       ├── test_detection.py
-│       ├── test_tracking.py
-│       └── test_touch_detection.py
-├── ml/
-│   ├── notebooks/
-│   │   ├── 01_yolo_detection_dev.ipynb
-│   │   ├── 02_tracking_experiments.ipynb
-│   │   └── 03_touch_logic_experiments.ipynb
-│   ├── scripts/
-│   │   ├── run_detection.py      # quick CLI to test detector on a video
-│   │   ├── run_tracking.py       # test tracker end-to-end
-│   │   └── visualise_events.py   # overlay detected touches on video
-│   └── models/
-│       └── README.md             # notes/links about weights (not checked in)
-├── data/
-│   ├── raw/          # original test videos (ignored in git)
-│   ├── processed/    # extracted frames / intermediate outputs
-│   └── outputs/      # result JSONs, event lists, sample clips
-├── scripts/
-│   ├── dev_run_api.sh           # run backend locally
-│   └── format_check.sh          # black/ruff/mypy etc – optional
-└── frontend/                    # you can add this later
-    ├── packa
+---
+
+## 🚀 Features (MVP Scope)
+
+- Upload or link a full match video (YouTube or file upload)
+- Automatic detection of:
+  - All players
+  - The ball
+- Player tracking using advanced multi-object tracking
+- Select yourself once in the video (click-to-identify)
+- Automatic detection of your touches based on ball–player proximity and motion patterns
+- Output:
+  - List of timestamps
+  - Optional clipped highlights
+  - JSON or CSV export
+
+---
+
+## 🧠 How It Works (High-Level)
+
+1. **Ingest Video**  
+   The system downloads or accepts the uploaded file and normalises it using `ffmpeg`.
+
+2. **Frame Processing**  
+   Video is sampled (e.g., 10–15 FPS) for efficient analysis.
+
+3. **Object Detection**  
+   YOLOv8 identifies:
+   - Player bounding boxes  
+   - Ball bounding boxes  
+
+4. **Multi-Object Tracking**  
+   Trackers such as **ByteTrack** or **DeepSORT** produce stable player IDs over time.
+
+5. **Player Identification**  
+   The user clicks on themselves once.  
+   The system infers which track corresponds to the target player.
+
+6. **Touch Event Detection**  
+   Ball proximity + velocity change + track association generate timestamped “touch events”.
+
+7. **Output Generation**  
+   Results are returned as:
+   - Touch timestamps  
+   - Optional highlight clips  
+   - JSON/CSV event objects  
+
+---
