@@ -1,0 +1,4 @@
+ffmpeg
+ultralytics
+opencv-python
+numpy
